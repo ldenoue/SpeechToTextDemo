@@ -10,6 +10,7 @@ class ViewController: UIViewController, SFSpeechRecognizerDelegate {
 	@IBOutlet weak var textView: UITextView!
 	@IBOutlet weak var microphoneButton: UIButton!
 	
+    private let commands = ["beep","boop"]
     private let speechRecognizer = SFSpeechRecognizer(locale: Locale.init(identifier: "en-US"))!
     
     private var recognitionRequest: SFSpeechAudioBufferRecognitionRequest?
@@ -76,7 +77,7 @@ class ViewController: UIViewController, SFSpeechRecognizerDelegate {
         }
         
         recognitionRequest = SFSpeechAudioBufferRecognitionRequest()  //3
-        
+        recognitionRequest?.taskHint = SFSpeechRecognitionTaskHint.confirmation;
         guard let inputNode = audioEngine.inputNode else {
             fatalError("Audio engine has no input node")
         }  //4
@@ -92,10 +93,16 @@ class ViewController: UIViewController, SFSpeechRecognizerDelegate {
             var isFinal = false  //8
             
             if result != nil {
+                //self.textView.text = result?.bestTranscription.formattedString  //9
                 if let segments = result?.bestTranscription.segments, segments.count > 0 {
                     let len = segments.count
-                    //self.textView.text = result?.bestTranscription.formattedString  //9
-                    self.textView.text = result?.bestTranscription.segments[len-1].substring
+                    if let last = result?.bestTranscription.segments[len-1].substring.lowercased() {
+                        if (self.commands.contains(last))
+                        {
+                            self.textView.text = last
+                        }
+                    }
+                    //print(result?.bestTranscription.segments[len-1].substring)
                 }
                 isFinal = (result?.isFinal)!
             }
